@@ -218,6 +218,10 @@ static void* router_worker(void *arg) {
                       "L2 Rewrite", "Updated Next-Hop MAC to Server (" SERVER_MAC ")", pkt);
         usleep(5000);
         
+        event_log_add(&net->event_log, pkt->simulation_id, DIR_FORWARD, NODE_ROUTER, LAYER_L1_PHYS,
+                      "L1 Transmission", "Pushed frame bits onto wire (eth1) toward Repeater 2", pkt);
+        usleep(5000);
+        
         queue_push(&net->q_router_to_rep2, pkt);
         
         // Reverse: from Repeater2 to Repeater1
@@ -225,7 +229,7 @@ static void* router_worker(void *arg) {
         if (!resp) break;
         
         event_log_add(&net->event_log, resp->simulation_id, DIR_REVERSE, NODE_ROUTER, LAYER_L1_PHYS,
-                      "L1 Inbound", "Response frame bits received on eth1", resp);
+                       "L1 Inbound", "Response frame bits received on eth1", resp);
         usleep(5000);
         
         event_log_add(&net->event_log, resp->simulation_id, DIR_REVERSE, NODE_ROUTER, LAYER_L2_LINK,
@@ -248,6 +252,10 @@ static void* router_worker(void *arg) {
         
         event_log_add(&net->event_log, resp->simulation_id, DIR_REVERSE, NODE_ROUTER, LAYER_L2_LINK,
                       "L2 Rewrite", "Updated Next-Hop MAC to Client (" CLIENT_MAC ")", resp);
+        usleep(5000);
+        
+        event_log_add(&net->event_log, resp->simulation_id, DIR_REVERSE, NODE_ROUTER, LAYER_L1_PHYS,
+                      "L1 Transmission", "Pushed response bits onto wire (eth0) toward Repeater 1", resp);
         usleep(5000);
         
         queue_push(&net->q_router_to_rep1, resp);
