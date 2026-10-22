@@ -1,8 +1,10 @@
-CC ?= clang
-CFLAGS ?= -Wall -Wextra -pthread -Iinclude -O2
-SRCS = src/queue.c src/event.c src/protocols.c src/nodes.c src/http_server.c src/main.c
-OBJS = $(SRCS:.c=.o)
-TARGET = bin/tcpsim
+CC      ?= clang
+CFLAGS  ?= -Wall -Wextra -pthread -I. -O2
+
+# All C sources live in the project root
+SRCS    = queue.c event.c protocols.c nodes.c http_server.c main.c
+OBJS    = $(SRCS:.c=.o)
+TARGET  = bin/tcpsim
 
 all: $(TARGET)
 
@@ -16,6 +18,6 @@ bin:
 	mkdir -p bin
 
 clean:
-	rm -f src/*.o $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
 .PHONY: all clean
