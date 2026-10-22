@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCP/IP Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <h1>TCP/IP Simulator</h1>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="main-layout">
+            <!-- Left Sidebar: Protocol Configuration -->
+            <aside class="sidebar-panel">
+                <div class="panel-header">
+                    <h2>Protocol Configuration</h2>
+                    <span class="badge">Layer 7</span>
+                </div>
+
+                <!-- Presets -->
+                <div class="form-group">
+                    <label>Quick Presets</label>
+                    <div class="preset-chips">
+                        <button class="chip active" data-preset="http-get">HTTP GET</button>
+                        <button class="chip" data-preset="dns-query">DNS Query</button>
+                        <button class="chip" data-preset="cdn-hit">CDN Cache</button>
+                        <button class="chip" data-preset="smtp-send">SMTP Mail</button>
+                        <button class="chip" data-preset="p2p-piece">P2P Chunk</button>
+                    </div>
+                </div>
+
+                <!-- Protocol Selector -->
+                <div class="form-group">
+                    <label for="protoSelect">Application Protocol</label>
+                    <select id="protoSelect" class="form-control">
+                        <option value="HTTP">HTTP (Hypertext Transfer Protocol)</option>
+                        <option value="DNS">DNS (Domain Name System)</option>
+                        <option value="CDN">CDN (Content Delivery Network)</option>
+                        <option value="SMTP">SMTP (Email Delivery & Retrieval)</option>
+                        <option value="P2P">P2P (BitTorrent Peer-to-Peer)</option>
+                    </select>
+                </div>
+
+                <!-- Sub-protocol for Mail -->
+                <div class="form-group" id="subprotoGroup" style="display: none;">
+                    <label for="subprotoSelect">Mail Transfer / Retrieval Mechanism</label>
+                    <select id="subprotoSelect" class="form-control">
+                        <option value="SMTP">SMTP (Send to Server - Port 25)</option>
+                        <option value="POP3">POP3 (Download from Mailbox - Port 110)</option>
+                        <option value="IMAP">IMAP (Interactive Mailbox Sync - Port 143)</option>
+                        <option value="WEBMAIL">Webmail HTTP API (Port 80)</option>
+                    </select>
+                </div>
+
+                <!-- Method / Command Dropdown -->
+                <div class="form-group">
+                    <label for="methodSelect">Method / Command</label>
+                    <select id="methodSelect" class="form-control">
+                        <option value="GET">GET (Retrieve resource)</option>
+                        <option value="POST">POST (Submit payload)</option>
+                        <option value="PUT">PUT (Replace/Store resource)</option>
+                        <option value="HEAD">HEAD (Fetch headers only - no body)</option>
+                    </select>
+                    <input type="text" id="methodInput" class="form-control" style="display: none;" value="GET">
+                </div>
+
+                <!-- Target URL / Host -->
+                <div class="form-group">
+                    <label for="targetInput">Target Resource / URI / Domain</label>
+                    <input type="text" id="targetInput" class="form-control" value="/index.html"
+                        placeholder="/index.html or domain.com">
+                </div>
+
+                <!-- Header Presets -->
+                <div class="form-group">
+                    <label for="headerPresetSelect">Header</label>
+                    <select id="headerPresetSelect" class="form-control">
+                        <option value="standard">Standard Web Browser</option>
+                        <option value="conditional">Conditional (If-Modified-Since / Caching)</option>
+                        <option value="auth">Authenticated (Bearer Token)</option>
+                        <option value="custom">Custom (Manual Edit)</option>
+                    </select>
+                </div>
+
+                <!-- Headers Raw Textarea -->
+                <div class="form-group">
+                    <label for="headersInput">Header Values (Editable)</label>
+                    <textarea id="headersInput" class="form-control code-font" rows="3"
+                        placeholder="Host: example.com"></textarea>
+                </div>
+
+                <!-- Body / Payload -->
+                <div class="form-group">
+                    <label for="bodyInput">Body Payload (Optional)</label>
+                    <textarea id="bodyInput" class="form-control code-font" rows="3"
+                        placeholder="Optional payload data"></textarea>
+                </div>
+
+                <!-- Trigger Button -->
+                <button id="startSimBtn" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Run Simulation
+                </button>
+            </aside>
+
+            <!-- Center & Right: Topology & Packet Inspector -->
+            <main class="simulation-workspace">
+                <!-- Playback & Control Bar -->
+                <div class="playback-bar">
+                    <div class="playback-controls">
+                        <button id="btnPrev" class="ctrl-btn" title="Previous Step" disabled>&larr;</button>
+                        <button id="btnPlayPause" class="ctrl-btn primary" title="Play/Pause">Play</button>
+                        <button id="btnNext" class="ctrl-btn" title="Next Step" disabled>&rarr;</button>
+                        <button id="btnReset" class="ctrl-btn" title="Reset">Reset</button>
+                    </div>
+
+                    <div class="step-counter">
+                        <span id="currentStepText">Step 0 / 0</span>
+                        <div class="progress-bar-container">
+                            <div id="stepProgressBar" class="progress-bar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="speed-slider-wrap">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="200" max="1800" step="100" value="800">
+                        <span id="speedVal">0.8s</span>
+                    </div>
+                </div>
+
+                <!-- Visual Network Topology -->
+                <div class="topology-stage">
+                    <div class="network-canvas" id="networkCanvas">
+                        <!-- Cable links SVG overlay -->
+                        <svg class="wires-layer" id="wiresLayer">
+                            <line id="wire-1" x1="12%" y1="50%" x2="30%" y2="50%" class="wire" />
+                            <line id="wire-2" x1="30%" y1="50%" x2="50%" y2="50%" class="wire" />
+                            <line id="wire-3" x1="50%" y1="50%" x2="70%" y2="50%" class="wire" />
+                            <line id="wire-4" x1="70%" y1="50%" x2="88%" y2="50%" class="wire" />
+
+                            <!-- Animated traveling packet -->
+                            <circle id="animPacket" r="8" cx="12%" cy="50%" class="traveling-packet"
+                                style="display: none;" />
+                        </svg>
+
+                        <!-- Node 1: Client -->
+                        <div class="node-box" id="node-CLIENT">
+                            <div class="node-header">
+                                <span class="node-badge">End System</span>
+                                <h3>Client</h3>
+                                <p class="node-ip">192.168.1.100</p>
+                            </div>
+                            <div class="stack-layers">
+                                <div class="layer-pill" data-layer="7">L7 Application</div>
+                                <div class="layer-pill" data-layer="4">L4 Transport (TCP)</div>
+                                <div class="layer-pill" data-layer="3">L3 Network (IP)</div>
+                                <div class="layer-pill" data-layer="2">L2 Data Link</div>
+                                <div class="layer-pill" data-layer="1">L1 Physical</div>
+                            </div>
+                        </div>
+
+                        <!-- Node 2: Repeater 1 -->
+                        <div class="node-box intermediary" id="node-REPEATER_1">
+                            <div class="node-header">
+                                <span class="node-badge">Physical</span>
+                                <h3>Repeater 1</h3>
+                                <p class="node-ip">Signal Booster</p>
+                            </div>
+                            <div class="stack-layers">
+                                <div class="layer-pill" data-layer="1">L1 Physical Forward</div>
+                            </div>
+                        </div>
+
+                        <!-- Node 3: Router -->
+                        <div class="node-box router" id="node-ROUTER">
+                            <div class="node-header">
+                                <span class="node-badge">Gateway</span>
+                                <h3>Router</h3>
+                                <p class="node-ip">Routing Table &bull; TTL</p>
+                            </div>
+                            <div class="stack-layers">
+                                <div class="layer-pill" data-layer="3">L3 Routing &amp; TTL</div>
+                                <div class="layer-pill" data-layer="2">L2 MAC Rewrite</div>
+                                <div class="layer-pill" data-layer="1">L1 Physical</div>
+                            </div>
+                        </div>
+
+                        <!-- Node 4: Repeater 2 -->
+                        <div class="node-box intermediary" id="node-REPEATER_2">
+                            <div class="node-header">
+                                <span class="node-badge">Physical</span>
+                                <h3>Repeater 2</h3>
+                                <p class="node-ip">Signal Booster</p>
+                            </div>
+                            <div class="stack-layers">
+                                <div class="layer-pill" data-layer="1">L1 Physical Forward</div>
+                            </div>
+                        </div>
+
+                        <!-- Node 5: Server -->
+                        <div class="node-box" id="node-SERVER">
+                            <div class="node-header">
+                                <span class="node-badge">End System</span>
+                                <h3>Server</h3>
+                                <p class="node-ip">10.0.0.50</p>
+                            </div>
+                            <div class="stack-layers">
+                                <div class="layer-pill" data-layer="7">L7 Handler</div>
+                                <div class="layer-pill" data-layer="4">L4 Port Listener</div>
+                                <div class="layer-pill" data-layer="3">L3 Network</div>
+                                <div class="layer-pill" data-layer="2">L2 Data Link</div>
+                                <div class="layer-pill" data-layer="1">L1 Physical</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Step Action Banner -->
+                <div class="step-banner" id="stepBanner">
+                    <div class="banner-icon" id="bannerDirIcon">&rarr;</div>
+                    <div class="banner-content">
+                        <div class="banner-title" id="bannerTitle">Ready to simulate</div>
+                        <div class="banner-details" id="bannerDetails">Select a protocol on the left and click "Run
+                            Simulation" to watch packets traverse the C threads.</div>
+                    </div>
+                    <div class="banner-meta" id="bannerMeta">
+                        <span class="badge" id="bannerNode">IDLE</span>
+                        <span class="badge secondary" id="bannerLayer">L-</span>
+                    </div>
+                </div>
+
+                <!-- Bottom Panels: PDU Encapsulation Inspector & Response View -->
+                <div class="inspector-grid">
+                    <!-- Layer Encapsulation Inspector -->
+                    <div class="card inspector-card">
+                        <div class="card-header">
+                            <h3>PDU Inspector (Encapsulated Headers)</h3>
+                            <span class="tag" id="inspectorDirection">Request (Forward)</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="pdu-layers-view" id="pduInspector">
+                                <!-- L2 -->
+                                <div class="pdu-block l2">
+                                    <div class="pdu-title">Layer 2 &bull; Ethernet Frame</div>
+                                    <div class="pdu-props" id="l2Props">
+                                        <span>Src MAC: <strong id="l2SrcMac">--</strong></span>
+                                        <span>Dest MAC: <strong id="l2DestMac">--</strong></span>
+                                        <span>EtherType: <strong id="l2Ether">0x0800</strong></span>
+                                    </div>
+                                </div>
+                                <!-- L3 -->
+                                <div class="pdu-block l3">
+                                    <div class="pdu-title">Layer 3 &bull; IPv4 Packet</div>
+                                    <div class="pdu-props" id="l3Props">
+                                        <span>Src IP: <strong id="l3SrcIp">--</strong></span>
+                                        <span>Dest IP: <strong id="l3DestIp">--</strong></span>
+                                        <span>TTL: <strong id="l3Ttl">--</strong></span>
+                                        <span>Protocol: <strong id="l3Proto">--</strong></span>
+                                    </div>
+                                </div>
+                                <!-- L4 -->
+                                <div class="pdu-block l4">
+                                    <div class="pdu-header-row">
+                                        <div class="pdu-title">Layer 4 &bull; Transport Layer</div>
+                                        <span class="badge secondary" id="l4ProtoBadge">TCP</span>
+                                    </div>
+                                    <div class="pdu-props" id="l4Props">
+                                        <div class="port-group">
+                                            <span>Src Port: <strong id="l4SrcPort">--</strong></span>
+                                            <span class="port-sub" id="l4SrcDesc">Ephemeral Client Socket</span>
+                                        </div>
+                                        <div class="port-group">
+                                            <span>Dest Port: <strong id="l4DestPort">--</strong></span>
+                                            <span class="port-sub" id="l4DestDesc">Well-Known Server Port</span>
+                                        </div>
+                                        <div class="port-group">
+                                            <span>Connection / Flags: <strong id="l4Flags">--</strong></span>
+                                            <span class="port-sub">Seq: <span id="l4Seq">--</span> &bull; Ack: <span
+                                                    id="l4Ack">--</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="transport-rationale-box" id="l4Rationale">
+                                        Transport layer details will display here during simulation.
+                                    </div>
+                                </div>
+                                <!-- L7 -->
+                                <div class="pdu-block l7">
+                                    <div class="pdu-title">Layer 7 &bull; Application Payload</div>
+                                    <div class="pdu-props" id="l7Props">
+                                        <span>Proto: <strong id="l7Proto">--</strong></span>
+                                        <span>Command: <strong id="l7Cmd">--</strong></span>
+                                        <span>Target: <strong id="l7Target">--</strong></span>
+                                    </div>
+                                    <div class="pdu-payload-box" id="l7Payload">No active payload.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Server Response & Execution Log -->
+                    <div class="card response-card">
+                        <div class="card-header">
+                            <h3>Server Coherent Response</h3>
+                            <span class="tag success" id="respStatusBadge">Waiting</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="response-view">
+                                <div class="resp-status-line">
+                                    <span>Status: <strong id="respStatusCode">---</strong></span>
+                                    <span>Message: <strong id="respStatusMsg">---</strong></span>
+                                </div>
+                                <pre class="resp-body-box"
+                                    id="respBodyBox">// Server response will render here once processed by the Server thread...</pre>
+                            </div>
+
+                            <div class="thread-log-section">
+                                <h4>Execution History</h4>
+                                <div class="log-stream" id="logStream">
+                                    <div class="log-item muted">No simulation executed yet.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
