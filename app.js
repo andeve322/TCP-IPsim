@@ -408,14 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const resp = await fetch('/api/simulate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            // Pure-JS simulation engine — no server required (GitHub Pages compatible)
+            timeline = window.TCPIPSim.runSimulation({
+                protocol:    payload.protocol,
+                subprotocol: payload.subprotocol,
+                method:      payload.method,
+                target:      payload.target,
+                headers:     payload.headers,
+                body:        payload.body
             });
-
-            if (!resp.ok) throw new Error('Simulation failed: HTTP ' + resp.status);
-            timeline = await resp.json();
 
             currentStep = 0;
             renderLogStream();
